@@ -83,6 +83,8 @@
     margin-top: 0;
     margin-bottom: calc(25px / 2);
     font-size: 20px;
+    text-align: justify;
+
 }
 
 @media(min-width: 1024px){
@@ -450,7 +452,7 @@ function drawDailyCases(){
       .append("text")
       .attr("x", x("2020-01-18"))
       .attr("y", y(285000))
-      .text("No specfic trend for daily new cases, possibly reporting duration or timing")
+      .text("New cases trend varies compared to other tatol cases, and deaths by staying inconsistant")
       .style("font-size", "16px")
     .style("fill", "blue")
     .style("font-family", "sans-serif")
@@ -813,7 +815,7 @@ function update(selectedVar) {
     .append("text")
     .attr("x", x("2020-05-21"))
     .attr("y", y(630000))
-    .text("Upward turn in Covid-19 fatalities")
+    .text("Covid-19 dealths are increasing consitently")
     .style("font-size", "16px")
 	.style("fill", "blue")
 	.style("font-family", "sans-serif")
