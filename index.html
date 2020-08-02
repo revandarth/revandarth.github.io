@@ -114,10 +114,10 @@
 </head>
 <body>
 <div class="wrapper">
-  <h1 align=center> COVID-19 </h1>
-  <p class="g-body">The coronavirus pandemic has sickened more than 17,586,600 people, according
-     to official counts. As of Saturday morning, at least 680,200 people have died,
-    and the virus has been detected in nearly every country, as these maps show.</p>
+  <h1 align=center> COVID-19 Narrative Visualization</h1>
+  <p class="g-body">The coronavirus pandemic has sickened more than <span style="color: green; ">17,586,600</span> people, according
+     to official counts. As of August 2nd, 2020 morning, at least <span style="color: red">680,200</span> people have died,
+    and the virus has been detected in nearly every country, as these map shows.</p>
   <div class="layer-toggles">
     <button class="toggle-button" data-key="covid_hot_spots" onclick="toggleElement(event)">
       Hot spots
@@ -128,7 +128,7 @@
     </button>
 
     <button class="toggle-button" data-key="covid_death_cases" onclick="toggleElement(event)">
-      Deaths
+      Total Deaths
     </button>
 
     <button class="toggle-button active" data-key="covid_daily_cases" onclick="toggleElement(event)">
@@ -140,23 +140,36 @@
       <select class="dropbtn" id="selectButton"><option class="dropdown-content" value="World" selected>World </option></select>
     </div>
       <div id="covid_hot_spots" class="chart-holder">
-          <p>Average daily daiths ratio per 100 per 100 cases</p>
-        <svg id="my_dataviz1" height="800" width="1200"></svg>
+          <p>Average Total Infection Fatality Rate(IFR) across the globe as of August 2, 2020 <br><br>
+            In this choropleth maps, the IFR is shown based on the thinkness of color per region from yellowish to red.
+          </p>
+          
+        <svg id="my_dataviz1" height="1000" width="1200"></svg>
       </div>
       <div id="covid_total_cases" class="chart-holder">
+          <p><b>Total reported cases per country across the world</b><br><br>
+            Charts show total cases per country and are on the same scale. Select left-top drop-down to choose the country you are interested, by default its cummulative world data.
+          </p>
         <svg id="my_dataviz2" height="1000" width="1200"></svg>
       </div>
       <div id="covid_death_cases" class="chart-holder">
-     
+          <p><b>Total reported deaths per country across the world</b><br><br>
+          Charts show total deaths reported per country and are on the same scale. Select left-top drop-down to choose the country you are interested, by default its cummulative world data.
+        </p>
         <svg id="covid_total_deaths" height="1000" width="1200"></svg>
       </div>
-      <div id="covid_daily_cases" class="chart-holder">      
+      <div id="covid_daily_cases" class="chart-holder">  
+          <p><b>Newly reported cases per country across the world</b><br><br>
+          Charts show total deaths reported per country and are on the same scale. Select left-top drop-down to choose the country you are interested, by default its cummulative world data.
+        </p>
         <svg id="my_dataviz4" height="1000" width="1200"></svg>
       </div>
   </div>
 </div>
 <footer class="dark-footer">
-  Source from <a href="https://www.nytimes.com/interactive/2020/world/coronavirus-maps.html" target="_blank">Newyork Inc</a>
+  ABOUT DATA
+  <p>The data is being extracted from <a href="https://ourworldindata.org/coronavirus" target="_blank"> Our World in Data</a>, a non-profit organization that focuses on maintaining the worlds useful data, the complete COVID-19 dataset is freely available on their site and being updated daily and includes data on confirmed cases, deaths, and testing.</p>
+  Created by <b>Revanth Reddy Airre, UIUC.</b>
 </footer>
 
 <script type="text/javascript">
@@ -183,7 +196,7 @@ function toggleElement(ev){
         document.getElementById('dropDown').style.display = 'none';        
         break;
       case 'covid_total_cases':
-      document.getElementById('dropDown').style.display = 'none';
+      document.getElementById('dropDown').style.display = 'block';
         drawTotalCountries();
         break;
       case 'covid_death_cases':
@@ -216,8 +229,8 @@ function drawHotSpots(){
   height = +svg.attr("height");
   var path = d3.geoPath();
   var projection = d3.geoMercator()
-    .scale(150)
-    .center([0,0])
+    .scale(200)
+    .center([0, -15])
     .translate([width/2 , height/1.4 ]);
   // Data and color scale
   var data = d3.map();
@@ -264,7 +277,6 @@ function drawHotSpots(){
                     div.transition()		
                         .duration(200)		
                         .style("opacity", .9);	
-                    // return div.html("<h1>"+d.properties.name+"</h1>" + "<table> <thread><tr><th>Total Cases<br/>"+ "----------------------------" + "<br/>Total Cases:"+data.get(d.id)+"<br/>Total Cases:"+total_casas_data.get(d.id)+"</br>IFR:"+d.per)
                      return div.html("<h3>"+d.properties.name+"</h3><br><table> <thead><tr><th>Total Cases</th><th>Total Dealths</th><th>IFR</th></tr></thead><tbody><tr><td>"+ total_casas_data.get(d.id) + "</td><td>"+data.get(d.id)+"</td><td>"+d.per+"</td></tr></tbody></table>")
                         .style("top", (d3.event.pageY) + "px")
                         .style("left", (d3.event.pageX) + "px")
@@ -279,12 +291,10 @@ function drawHotSpots(){
 
       var keys = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
-        // Usually you have a color scale in your chart already
         var color = d3.scaleThreshold()
         .domain(keys)
         .range(d3.schemeYlOrRd[9])
 
-        // Add one dot in the legend for each name.
         var size = 50
         svg.append("g")
         .selectAll("mydots")
@@ -298,7 +308,6 @@ function drawHotSpots(){
             .attr("height", 10)
             .style("fill", function(d){ return color(d)});
 
-        // Add one dot in the legend for each name.
         svg.append("g")
         .selectAll("mylabels")
         .data(keys)
@@ -310,15 +319,15 @@ function drawHotSpots(){
             .style("fill", "black")
             .text(function(d){ return d})
             .attr("text-anchor", "left")
+
     }
   }
 
 function drawDailyCases(){
     var margin = {top: 50, right: 100, bottom: 100, left: 150},
     width = 1000,
-    height = 600;
+    height = 500;
 
-    // append the svg object to the body of the page
       var svg = d3.select("#my_dataviz4")
         .append("svg")
           .attr("width", width + margin.left + margin.right)
@@ -328,16 +337,10 @@ function drawDailyCases(){
                 "translate(" + margin.left + "," + margin.top + ")");
 
 
-    // Initialize the X axis
-    //var x = d3.scaleBand()
-    //  .range([ 0, width ])
-    //  .padding(0.2);
     var x = d3.scaleBand()
-      //.domain(["2019-12-31", "2020-07-21"])
       .range([ 0, width ]);
     var xAxis = svg.append("g")
       .attr("transform", "translate(0," + height + ")")
-    // text label for the x axis
       svg.append("text")  
           .attr("transform",
                 "translate(" + (width/2) + " ," + 
@@ -361,17 +364,12 @@ function drawDailyCases(){
       .text("New Cases");      
 
 
-    // A function that create / update the plot for a given variable:
     function update(selectedVar) {
-  // Parse the Data
-  //d3.csv("https://covid.ourworldindata.org/data/ecdc/new_cases.csv", function(rawData) {
-  d3.csv("https://covid.ourworldindata.org/data/ecdc/new_cases.csv", function(rawData) {
-    // X axis
-	var cutoffDate = new Date(2020,0,15);
+      d3.csv("https://covid.ourworldindata.org/data/ecdc/new_cases.csv", function(rawData) {
+        // X axis
+      var cutoffDate = new Date(2020,0,15);
 	//console.log(rawData);
 		var data = rawData.filter(function(d) {return new Date(d.date) > cutoffDate;});
-	//console.log(data);
-	//console.log(cutoffDate);
     x.domain(data.map(function(d) { return d.date; }))
     xAxis.transition().duration(1000).call(d3.axisBottom(x).tickValues(x.domain().filter(function(d, i) { return !(i % 4); })))
 	.selectAll("text")
@@ -381,9 +379,7 @@ function drawDailyCases(){
     y.domain([0, d3.max(data, function(d) { return +d[selectedVar] }) ]);
     yAxis.transition().duration(1000).call(d3.axisLeft(y));
     
-	          // Add a tooltip div. Here I define the general feature of the tooltip: stuff that do not depend on the data point.
-  // Its opacity is set to 0: we don't see it by default.
-  var tooltip = d3.select("#covid_new_cases")
+  var tooltip = d3.select("#my_dataviz4")
    .append("div")
 	.style("position", "absolute")
     .style("opacity", 0)
@@ -393,8 +389,6 @@ function drawDailyCases(){
     .style("border-radius", "5px")
     .style("padding", "10px")
 
-  // A function that change this tooltip when the user hover a point.
-  // Its opacity is set to 1: we can now see it. Plus it set the text and position of tooltip depending on the datapoint (d)
   const formater =  d3.format(',d');
   var showTooltip = function(d) {
     var x = d3.event.x, y = d3.event.y;
@@ -406,9 +400,6 @@ function drawDailyCases(){
       .html("New Cases: " + formater(parseInt(d[selectedVar], 10)) + 
 	  "<br />" + "Date:  " + d.date +
 	  "<br />" + "Country/Region:  " + selectedVar)
-      //.style("left", (d3.mouse(this)[0]+10))
-      //.style("top", (d3.mouse(this)[1]))
-	 // .style("display", "inline");
 	   .style("left", (d3.event.pageX) + "px")
        .style("top", (d3.event.pageY) + "px")
   }
@@ -416,10 +407,7 @@ function drawDailyCases(){
     tooltip
     .style("left", (d3.mouse(this)[0]+10) + "px")
     .style("top", (d3.mouse(this)[1]) + "px")
-	//.style("left", (d3.event.pageX - 34) + "px")
-    //.style("top", (d3.event.pageY - 12) + "px")
-	//  .style("left", (d3.event.pageX) + "px")
-     // .style("top", (d3.event.pageY - 28) + "px")
+
   }
   // A function that change this tooltip when the leaves a point: just need to set opacity to 0 again
   var hideTooltip = function(d) {
@@ -486,11 +474,8 @@ function drawDailyCases(){
     
     }
     update('World');
-    //d3.csv("https://covid.ourworldindata.org/data/ecdc/locations.csv", function(countryData) {
       d3.csv("https://covid.ourworldindata.org/data/ecdc/locations.csv", function(countryData) {
-        // add the options to the button
       countryData.push({countriesAndTerritories: "World",location: "World", continent: "World",population_year: "2020",population:"38928341"})
-      //console.log(countryData)
         d3.select("#selectButton")
           .selectAll('myOptions')
           .data(countryData)
@@ -501,9 +486,7 @@ function drawDailyCases(){
       })	
 
       d3.select("#selectButton").on("change", function(d) {
-          // recover the option that has been chosen
           var selectedOption = d3.select(this).property("value")
-          // run the updateChart function with this selected option
           update(selectedOption)
       })	
   }
@@ -511,13 +494,9 @@ function drawDailyCases(){
 function drawTotalCountries(){
     
       // set the dimensions and margins of the graph
-      // var margin = {top: 50, right: 100, bottom: 100, left: 400},
-      //     width = 1340 - margin.left - margin.right,
-      //     height = 600 - margin.top - margin.bottom;
-
       var margin = {top: 50, right: 100, bottom: 100, left: 150},
           width = 1000,
-          height = 600;
+          height = 500;
 
       // append the svg object to the body of the page
       var svg = d3.select("#my_dataviz2")
@@ -528,11 +507,6 @@ function drawTotalCountries(){
           .attr("transform",
                 "translate(" + margin.left + "," + margin.top + ")");
 
-
-        // Initialize the X axis
-        //var x = d3.scaleBand()
-        //  .range([ 0, width ])
-        //  .padding(0.2);
         var x = d3.scaleBand()
           .range([ 0, width ]);
         var xAxis = svg.append("g")
@@ -561,17 +535,14 @@ function drawTotalCountries(){
           .text("Confirmed Cases");      
 
 
-    // A function that create / update the plot for a given variable:
     function update(selectedVar) {
   // Parse the Data
-  //d3.csv("https://covid.ourworldindata.org/data/ecdc/total_cases.csv", function(rawData) {
+
     d3.csv("https://covid.ourworldindata.org/data/ecdc/total_cases.csv", function(rawData) {
       // X axis
     var cutoffDate = new Date(2020,0,15);
-    //console.log(rawData);
       var data = rawData.filter(function(d) {return new Date(d.date) > cutoffDate;});
-    //console.log(data);
-    //console.log(cutoffDate);
+
       x.domain(data.map(function(d) { return d.date; }))
       xAxis.transition().duration(1000).call(d3.axisBottom(x).tickValues(x.domain().filter(function(d, i) { return !(i % 4); })))
     .selectAll("text")
@@ -581,9 +552,8 @@ function drawTotalCountries(){
       y.domain([0, d3.max(data, function(d) { return +d[selectedVar] }) ]);
       yAxis.transition().duration(1000).call(d3.axisLeft(y));
       
-              // Add a tooltip div. Here I define the general feature of the tooltip: stuff that do not depend on the data point.
-    // Its opacity is set to 0: we don't see it by default.
-    var tooltip = d3.select("#covid_total_cases")
+
+    var tooltip = d3.select("#my_dataviz2")
     .append("div")
     .style("position", "absolute")
       .style("opacity", 0)
@@ -593,8 +563,6 @@ function drawTotalCountries(){
       .style("border-radius", "5px")
       .style("padding", "10px")
 
-    // A function that change this tooltip when the user hover a point.
-    // Its opacity is set to 1: we can now see it. Plus it set the text and position of tooltip depending on the datapoint (d)
     const formater =  d3.format(',d');
     var showTooltip = function(d) {
       var x = d3.event.x, y = d3.event.y;
@@ -615,7 +583,6 @@ function drawTotalCountries(){
     .style("top", (d3.mouse(this)[1]) + "px")
   }
 
-  // A function that change this tooltip when the leaves a point: just need to set opacity to 0 again
   var hideTooltip = function(d) {
     tooltip
       .transition()
@@ -630,8 +597,6 @@ function drawTotalCountries(){
             .enter()
             .append("rect")
             .merge(u)
-            //.transition()
-            //.duration(1000)
               .attr("x", function(d) { return x(d.date); })
               .attr("y", function(d) { return y(d[selectedVar]); })
               .attr("width", x.bandwidth())
@@ -640,23 +605,18 @@ function drawTotalCountries(){
           .on("mouseover", showTooltip )
               .on("mouseleave", hideTooltip )
           
-        // Append annotation line to highlight the separation
-
           svg
           .append("line")
             .attr("x1", x("2020-05-25") )
             .attr("x2", x("2020-07-14") )
-          //.attr("x1", midDate )
-          //.attr("x1", midDate )
             .attr("y1", y(15000000) )
             .attr("y2", y(15000000) )
             .attr("stroke", "#F46D43")
-          // .attr("stroke-dasharray", "4")
           svg
           .append("text")
           .attr("x", x("2020-04-12"))
           .attr("y", y(15700000))
-          .text("Confirmed cases trending upwards with few exceptions")
+          .text("Confirmed cases are consistently increasing, except few cases")
           .style("font-size", "16px")
         .style("fill", "blue")
         .style("font-family", "sans-serif")
@@ -711,7 +671,7 @@ function drawDeathCase(){
 
 var margin = {top: 50, right: 100, bottom: 100, left: 150},
           width = 1000,
-          height = 600;
+          height = 500;
 
 // append the svg object to the body of the page
 var svg = d3.select("#covid_total_deaths")

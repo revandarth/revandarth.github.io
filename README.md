@@ -1,1 +1,2 @@
-# revandarth.github.io
+# COVID-19 Narrative Visualization
+The COVID-19 has threatened more than 17.5M people and taken the lives of around 680K people across the globe as of August 1st, 2020, according to official numbers. The virus has been identified in almost every country, impacted the lives of millions of people. I attempted to create a narrative visualization that will explore the details of coronavirus pandemic spread and impact across the globe. I designed this interactive and narrative storytelling visualization from the lessons I learned from CS499 Data Visualization Course at UIUC.
