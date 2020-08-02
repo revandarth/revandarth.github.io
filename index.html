@@ -1,1 +1,937 @@
-Hello World
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  html{
+    height:100%;
+  }
+  body {
+    margin:0;
+   font: 14px sans-serif;
+   min-height: 100vh;
+   /* background-color: green; */
+ }
+.bar:hover{
+   align-content: center;
+}
+ div.tip {
+ position: absolute;
+ text-align: center;
+ padding: 6px;
+ font: 12px sans-serif;
+ background: white;
+ box-shadow: 0 1px 6px 0 rgba(32, 33, 36, .28);
+
+ border-radius: 8px;
+ pointer-events: none;
+}
+.d3-tip {
+  line-height: 1;
+  padding: 12px;
+  background: rgba(43,43,43, 0.8);
+  color: #fff;
+  border-radius: 2px;
+}
+/* .chart-wrapper { */
+  /* width:1000px; 
+  margin:0% auto; 
+  max-height:500px;
+  overflow:hidden;
+  align-items: center; */
+/* } */
+.chart-wrapper svg{
+  width:100%;
+}
+#chart-wrap p{
+  text-align: center;
+}
+.wrapper {
+  width:80%;
+  margin: 0% auto;
+  padding: 2%;
+}
+.layer-toggles{
+    display: flex;
+    /* width: 60%; */
+    align-items: center;
+    justify-content: center;
+}
+.toggle-button {
+    background-color: #efefef;
+    padding: 6px 12px;
+    font-size: 14px;
+    width: 150px;
+    border: 1px solid #e2e2e2;
+    display: inline-flex;
+    /* -ms-flex: 1;
+    flex: 1; */
+    outline: none;
+    color: #444;
+    cursor:pointer;
+    /* border-right: none; */
+    justify-content: center;
+}
+.toggle-button.is-active{
+  background-color: #ddd;
+}
+.g-body {
+    width: calc(100% - 40px);
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 0;
+    margin-bottom: calc(25px / 2);
+    font-size: 20px;
+}
+
+@media(min-width: 1024px){
+    .g-body {
+    font-size: 20px;
+    line-height: 30px;
+    }
+}
+
+.dark-footer{
+  background: #797575;
+  color: #efefef;
+  position: fixed;
+  bottom: 0px;
+  width: 100%;
+  padding: 20px 20px;
+  text-align: center;
+}
+.chart-holder{
+  display:none;
+}
+</style>
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v4.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+<!-- Create an element where the map will take place -->
+
+</head>
+<body>
+<div class="wrapper">
+  <h1 align=center> COVID-19 </h1>
+  <p class="g-body">The coronavirus pandemic has sickened more than 17,586,600 people, according
+     to official counts. As of Saturday morning, at least 680,200 people have died,
+    and the virus has been detected in nearly every country, as these maps show.</p>
+  <div class="layer-toggles">
+    <button class="toggle-button" data-key="covid_hot_spots" onclick="toggleElement(event)">
+      Hot spots
+    </button>
+
+    <button class="toggle-button" data-key="covid_total_cases" onclick="toggleElement(event)">
+      Total cases
+    </button>
+
+    <button class="toggle-button" data-key="covid_death_cases" onclick="toggleElement(event)">
+      Deaths
+    </button>
+
+    <button class="toggle-button active" data-key="covid_daily_cases" onclick="toggleElement(event)">
+      Daily Cases
+    </button>
+  </div>
+  <div class="chart-wrapper" id="chart-wrap">
+    <div class="dropdown" id="dropDown">
+      <select class="dropbtn" id="selectButton"><option class="dropdown-content" value="World" selected>World </option></select>
+    </div>
+      <div id="covid_hot_spots" class="chart-holder">
+          <p>Average daily daiths ratio per 100 per 100 cases</p>
+        <svg id="my_dataviz1" height="800" width="1200"></svg>
+      </div>
+      <div id="covid_total_cases" class="chart-holder">
+        <svg id="my_dataviz2" height="1000" width="1200"></svg>
+      </div>
+      <div id="covid_death_cases" class="chart-holder">
+     
+        <svg id="covid_total_deaths" height="1000" width="1200"></svg>
+      </div>
+      <div id="covid_daily_cases" class="chart-holder">      
+        <svg id="my_dataviz4" height="1000" width="1200"></svg>
+      </div>
+  </div>
+</div>
+<footer class="dark-footer">
+  Source from <a href="https://www.nytimes.com/interactive/2020/world/coronavirus-maps.html" target="_blank">Newyork Inc</a>
+</footer>
+
+<script type="text/javascript">
+
+// The svg
+function toggleElement(ev){
+  // console.log(ev.target.getAttribute('data-key'))
+  var id  = ev.target.getAttribute('data-key');
+  var chartWrapper = document.querySelectorAll('.chart-holder'),
+    i = 0,
+    j = 0,
+    l = chartWrapper.length;
+  var btns = document.querySelectorAll('.toggle-button');
+  for (j = 0; j < btns.length; j++){
+    btns[j].classList.remove('is-active');
+  }
+  for (i; i < l; i++) {
+      chartWrapper[i].style.display = 'none';
+  }  
+  document.getElementById(id).style.display = 'block';
+  switch(id){
+      case 'covid_hot_spots':
+        drawHotSpots();
+        document.getElementById('dropDown').style.display = 'none';        
+        break;
+      case 'covid_total_cases':
+      document.getElementById('dropDown').style.display = 'none';
+        drawTotalCountries();
+        break;
+      case 'covid_death_cases':
+        document.getElementById('dropDown').style.display = 'block';
+        drawDeathCase();
+        break;
+      case 'covid_daily_cases':
+        document.getElementById('dropDown').style.display = 'block';
+        drawDailyCases();
+        break;
+  }
+  ev.currentTarget.className += ' is-active';
+  //setTimeout(function(){
+  //},500);  
+}
+
+function onPageLoad(){
+  var link = document.querySelectorAll('.toggle-button');
+  link[0].click();   
+}
+
+function percentage(partialValue, totalValue) {
+   var per = (100 * partialValue) / totalValue
+   return per.toFixed(2)
+} 
+
+function drawHotSpots(){
+  var svg = d3.select("#my_dataviz1"),
+  width = +svg.attr("width"),
+  height = +svg.attr("height");
+  var path = d3.geoPath();
+  var projection = d3.geoMercator()
+    .scale(150)
+    .center([0,0])
+    .translate([width/2 , height/1.4 ]);
+  // Data and color scale
+  var data = d3.map();
+  var total_casas_data = d3.map()
+  var colorScale = d3.scaleThreshold()
+    .domain([1, 2, 3, 4, 5, 6, 7, 8, 9])
+    .range(d3.schemeYlOrRd[7]);
+  d3.queue()
+    .defer(d3.json, "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson")
+    // .defer(d3.csv, "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world_population.csv", function(d) { 
+    .defer(d3.csv, "https://covid.ourworldindata.org/data/owid-covid-data.csv", function(d) { 
+      // console.log(d)
+      console.log(d3.max(d, function(d) { return +d.date; }))
+
+      if(d.date=="2020-08-02") {
+        data.set(d.iso_code, d.total_deaths);
+        total_casas_data.set(d.iso_code, d.total_cases) }}
+        )
+    .await(ready);
+    function ready(error, topo) {
+  // console.log(data)
+  var div = d3.select("body").append("div")	
+                        .attr("class", "tip")				
+                        .style("opacity", 0);
+  // Draw the map
+
+    svg.append("g")
+    .selectAll("path")
+    .data(topo.features)
+    .enter().append("path")
+      .attr('class', 'country')
+      // draw each country
+      .attr("d", d3.geoPath()
+        .projection(projection)
+      )
+      // set the color of each country
+      .attr("fill", function (d) {
+        d.per = percentage(data.get(d.id), total_casas_data.get(d.id)) || 0;
+        // d.total = data.get(d.id) || 0;
+        return colorScale(d.per);
+      })
+      .on("mouseover", function(d) {
+                    console.log(d)
+                    div.transition()		
+                        .duration(200)		
+                        .style("opacity", .9);	
+                    // return div.html("<h1>"+d.properties.name+"</h1>" + "<table> <thread><tr><th>Total Cases<br/>"+ "----------------------------" + "<br/>Total Cases:"+data.get(d.id)+"<br/>Total Cases:"+total_casas_data.get(d.id)+"</br>IFR:"+d.per)
+                     return div.html("<h3>"+d.properties.name+"</h3><br><table> <thead><tr><th>Total Cases</th><th>Total Dealths</th><th>IFR</th></tr></thead><tbody><tr><td>"+ total_casas_data.get(d.id) + "</td><td>"+data.get(d.id)+"</td><td>"+d.per+"</td></tr></tbody></table>")
+                        .style("top", (d3.event.pageY) + "px")
+                        .style("left", (d3.event.pageX) + "px")
+      })
+      .on("mouseout", function(d) {		
+                    div.transition()		
+                        .duration(500)		
+                        .style("opacity", 0);	
+                })
+      .append('tittle')
+
+
+      var keys = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+        // Usually you have a color scale in your chart already
+        var color = d3.scaleThreshold()
+        .domain(keys)
+        .range(d3.schemeYlOrRd[9])
+
+        // Add one dot in the legend for each name.
+        var size = 50
+        svg.append("g")
+        .selectAll("mydots")
+        .data(keys)
+        .enter()
+        .append("rect")
+            .attr('transform', 'translate(350,0)')    
+            .attr("y", 0)
+            .attr("x", function(d,i){ return 100 + i*(50)}) // 100 is where the first dot appears. 25 is the distance between dots
+            .attr("width", size)
+            .attr("height", 10)
+            .style("fill", function(d){ return color(d)});
+
+        // Add one dot in the legend for each name.
+        svg.append("g")
+        .selectAll("mylabels")
+        .data(keys)
+        .enter()
+        .append("text")
+            .attr('transform', 'translate(350,0)')   
+            .attr("y", 25)
+            .attr("x", function(d,i){ return 100 + i*(size) + (size/2)}) // 100 is where the first dot appears. 25 is the distance between dots
+            .style("fill", "black")
+            .text(function(d){ return d})
+            .attr("text-anchor", "left")
+    }
+  }
+
+function drawDailyCases(){
+    var margin = {top: 50, right: 100, bottom: 100, left: 150},
+    width = 1000,
+    height = 600;
+
+    // append the svg object to the body of the page
+      var svg = d3.select("#my_dataviz4")
+        .append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+          .attr("transform",
+                "translate(" + margin.left + "," + margin.top + ")");
+
+
+    // Initialize the X axis
+    //var x = d3.scaleBand()
+    //  .range([ 0, width ])
+    //  .padding(0.2);
+    var x = d3.scaleBand()
+      //.domain(["2019-12-31", "2020-07-21"])
+      .range([ 0, width ]);
+    var xAxis = svg.append("g")
+      .attr("transform", "translate(0," + height + ")")
+    // text label for the x axis
+      svg.append("text")  
+          .attr("transform",
+                "translate(" + (width/2) + " ," + 
+                              (height + margin.top + 30) + ")")
+          .style("text-anchor", "middle")
+        .style("font", "20px times")
+          .text("Date");
+    // Initialize the Y axis
+        var y = d3.scaleLinear()
+          .range([ height, 0]);
+        var yAxis = svg.append("g")
+          .attr("class", "myYaxis")
+// text label for the y axis
+  svg.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", margin.left - margin.left - margin.right)
+      .attr("x",0 - (height / 2))
+      .attr("dy", "1em")
+      .style("text-anchor", "middle")
+	  .style("font", "20px times")
+      .text("New Cases");      
+
+
+    // A function that create / update the plot for a given variable:
+    function update(selectedVar) {
+  // Parse the Data
+  //d3.csv("https://covid.ourworldindata.org/data/ecdc/new_cases.csv", function(rawData) {
+  d3.csv("https://covid.ourworldindata.org/data/ecdc/new_cases.csv", function(rawData) {
+    // X axis
+	var cutoffDate = new Date(2020,0,15);
+	//console.log(rawData);
+		var data = rawData.filter(function(d) {return new Date(d.date) > cutoffDate;});
+	//console.log(data);
+	//console.log(cutoffDate);
+    x.domain(data.map(function(d) { return d.date; }))
+    xAxis.transition().duration(1000).call(d3.axisBottom(x).tickValues(x.domain().filter(function(d, i) { return !(i % 4); })))
+	.selectAll("text")
+		.attr("transform", "translate(-25,30)rotate(-60)")
+
+    // Add Y axis
+    y.domain([0, d3.max(data, function(d) { return +d[selectedVar] }) ]);
+    yAxis.transition().duration(1000).call(d3.axisLeft(y));
+    
+	          // Add a tooltip div. Here I define the general feature of the tooltip: stuff that do not depend on the data point.
+  // Its opacity is set to 0: we don't see it by default.
+  var tooltip = d3.select("#covid_new_cases")
+   .append("div")
+	.style("position", "absolute")
+    .style("opacity", 0)
+    .attr("class", "tooltip")
+    .style("background-color", "black")
+    .style("color", "white")
+    .style("border-radius", "5px")
+    .style("padding", "10px")
+
+  // A function that change this tooltip when the user hover a point.
+  // Its opacity is set to 1: we can now see it. Plus it set the text and position of tooltip depending on the datapoint (d)
+  const formater =  d3.format(',d');
+  var showTooltip = function(d) {
+    var x = d3.event.x, y = d3.event.y;
+    tooltip
+      .transition()
+      .duration(200)
+      .style("opacity", 1)
+    tooltip
+      .html("New Cases: " + formater(parseInt(d[selectedVar], 10)) + 
+	  "<br />" + "Date:  " + d.date +
+	  "<br />" + "Country/Region:  " + selectedVar)
+      //.style("left", (d3.mouse(this)[0]+10))
+      //.style("top", (d3.mouse(this)[1]))
+	 // .style("display", "inline");
+	   .style("left", (d3.event.pageX) + "px")
+       .style("top", (d3.event.pageY) + "px")
+  }
+  var moveTooltip = function(d) {
+    tooltip
+    .style("left", (d3.mouse(this)[0]+10) + "px")
+    .style("top", (d3.mouse(this)[1]) + "px")
+	//.style("left", (d3.event.pageX - 34) + "px")
+    //.style("top", (d3.event.pageY - 12) + "px")
+	//  .style("left", (d3.event.pageX) + "px")
+     // .style("top", (d3.event.pageY - 28) + "px")
+  }
+  // A function that change this tooltip when the leaves a point: just need to set opacity to 0 again
+  var hideTooltip = function(d) {
+    tooltip
+      .transition()
+      .duration(100)
+      .style("opacity", 0)
+  }
+    hideTooltip;
+ 	var u = svg.selectAll("rect")
+      .data(data)
+    // update bars
+    u
+      .enter()
+      .append("rect")
+      .merge(u)
+      //.transition()
+      //.duration(1000)
+        .attr("x", function(d) { return x(d.date); })
+        .attr("y", function(d) { return y(d[selectedVar]); })
+        .attr("width", x.bandwidth())
+        .attr("height", function(d) { return height - y(d[selectedVar]); })
+        .attr("fill", "#69b3a2")
+		.on("mouseover", showTooltip )
+        .on("mouseleave", hideTooltip )
+		
+		// Append annotation line to highlight the separation
+
+    svg
+      .append("line")
+        .attr("x1", x("2020-05-15") )
+        .attr("x2", x("2020-01-30") )
+      //.attr("x1", midDate )
+      //.attr("x1", midDate )
+        .attr("y1", y(275000) )
+        .attr("y2", y(275000) )
+        .attr("stroke", "#F46D43")
+      // .attr("stroke-dasharray", "4")
+      svg
+      .append("text")
+      .attr("x", x("2020-01-18"))
+      .attr("y", y(285000))
+      .text("No specfic trend for daily new cases, possibly reporting duration or timing")
+      .style("font-size", "16px")
+    .style("fill", "blue")
+    .style("font-family", "sans-serif")
+    
+    svg
+      .append("text")
+      .attr("x", x("2020-03-01"))
+      .attr("y", y(278000))
+      .text("(Move mouse over bars for more details)")
+      .style("font-size", "12px")
+    
+    svg
+      .append("circle")
+    .attr("cx",x("2020-06-15"))
+    .attr("cy",y(180000))
+    .attr("r", 200)
+      .attr("stroke", "#F46D43")
+      .attr("stroke-dasharray", "4")
+    .attr("fill", "none")		
+    })
+    
+    }
+    update('World');
+    //d3.csv("https://covid.ourworldindata.org/data/ecdc/locations.csv", function(countryData) {
+      d3.csv("https://covid.ourworldindata.org/data/ecdc/locations.csv", function(countryData) {
+        // add the options to the button
+      countryData.push({countriesAndTerritories: "World",location: "World", continent: "World",population_year: "2020",population:"38928341"})
+      //console.log(countryData)
+        d3.select("#selectButton")
+          .selectAll('myOptions')
+          .data(countryData)
+          .enter()
+          .append('option')
+          .text(function (d) { return d.location; }) // text showed in the menu
+          .attr("value", function (d) { return d.location; }) // corresponding value returned by the button
+      })	
+
+      d3.select("#selectButton").on("change", function(d) {
+          // recover the option that has been chosen
+          var selectedOption = d3.select(this).property("value")
+          // run the updateChart function with this selected option
+          update(selectedOption)
+      })	
+  }
+
+function drawTotalCountries(){
+    
+      // set the dimensions and margins of the graph
+      // var margin = {top: 50, right: 100, bottom: 100, left: 400},
+      //     width = 1340 - margin.left - margin.right,
+      //     height = 600 - margin.top - margin.bottom;
+
+      var margin = {top: 50, right: 100, bottom: 100, left: 150},
+          width = 1000,
+          height = 600;
+
+      // append the svg object to the body of the page
+      var svg = d3.select("#my_dataviz2")
+        .append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+          .attr("transform",
+                "translate(" + margin.left + "," + margin.top + ")");
+
+
+        // Initialize the X axis
+        //var x = d3.scaleBand()
+        //  .range([ 0, width ])
+        //  .padding(0.2);
+        var x = d3.scaleBand()
+          .range([ 0, width ]);
+        var xAxis = svg.append("g")
+          .attr("transform", "translate(0," + height + ")")
+        // text label for the x axis
+          svg.append("text")  
+              .attr("transform",
+                    "translate(" + (width/2) + " ," + 
+                                  (height + margin.top + 30) + ")")
+              .style("text-anchor", "middle")
+            .style("font", "20px times")
+              .text("Date");
+        // Initialize the Y axis
+    var y = d3.scaleLinear()
+      .range([ height, 0]);
+    var yAxis = svg.append("g")
+      .attr("class", "myYaxis")
+    // text label for the y axis
+      svg.append("text")
+          .attr("transform", "rotate(-90)")
+          .attr("y", margin.left - margin.left - margin.right)
+          .attr("x",0 - (height / 2))
+          .attr("dy", "1em")
+          .style("text-anchor", "middle")
+        .style("font", "20px times")
+          .text("Confirmed Cases");      
+
+
+    // A function that create / update the plot for a given variable:
+    function update(selectedVar) {
+  // Parse the Data
+  //d3.csv("https://covid.ourworldindata.org/data/ecdc/total_cases.csv", function(rawData) {
+    d3.csv("https://covid.ourworldindata.org/data/ecdc/total_cases.csv", function(rawData) {
+      // X axis
+    var cutoffDate = new Date(2020,0,15);
+    //console.log(rawData);
+      var data = rawData.filter(function(d) {return new Date(d.date) > cutoffDate;});
+    //console.log(data);
+    //console.log(cutoffDate);
+      x.domain(data.map(function(d) { return d.date; }))
+      xAxis.transition().duration(1000).call(d3.axisBottom(x).tickValues(x.domain().filter(function(d, i) { return !(i % 4); })))
+    .selectAll("text")
+      .attr("transform", "translate(-25,30)rotate(-60)")
+
+      // Add Y axis
+      y.domain([0, d3.max(data, function(d) { return +d[selectedVar] }) ]);
+      yAxis.transition().duration(1000).call(d3.axisLeft(y));
+      
+              // Add a tooltip div. Here I define the general feature of the tooltip: stuff that do not depend on the data point.
+    // Its opacity is set to 0: we don't see it by default.
+    var tooltip = d3.select("#covid_total_cases")
+    .append("div")
+    .style("position", "absolute")
+      .style("opacity", 0)
+      .attr("class", "tooltip")
+      .style("background-color", "black")
+      .style("color", "white")
+      .style("border-radius", "5px")
+      .style("padding", "10px")
+
+    // A function that change this tooltip when the user hover a point.
+    // Its opacity is set to 1: we can now see it. Plus it set the text and position of tooltip depending on the datapoint (d)
+    const formater =  d3.format(',d');
+    var showTooltip = function(d) {
+      var x = d3.event.x, y = d3.event.y;
+      tooltip
+        .transition()
+        .duration(200)
+        .style("opacity", 1)
+      tooltip
+        .html("Total Cases: " + formater(parseInt(d[selectedVar], 10)) + 
+      "<br />" + "Date: " + d.date +
+      "<br />" + "Country/Region:  " + selectedVar)
+      .style("left", (d3.event.pageX) + "px")
+        .style("top", (d3.event.pageY) + "px")
+    }
+    var moveTooltip = function(d) {
+    tooltip
+    .style("left", (d3.mouse(this)[0]+10) + "px")
+    .style("top", (d3.mouse(this)[1]) + "px")
+  }
+
+  // A function that change this tooltip when the leaves a point: just need to set opacity to 0 again
+  var hideTooltip = function(d) {
+    tooltip
+      .transition()
+      .duration(100)
+      .style("opacity", 0)
+  }
+    hideTooltip;
+        var u = svg.selectAll("rect")
+            .data(data)
+          // update bars
+          u
+            .enter()
+            .append("rect")
+            .merge(u)
+            //.transition()
+            //.duration(1000)
+              .attr("x", function(d) { return x(d.date); })
+              .attr("y", function(d) { return y(d[selectedVar]); })
+              .attr("width", x.bandwidth())
+              .attr("height", function(d) { return height - y(d[selectedVar]); })
+              .attr("fill", "#69b3a2")
+          .on("mouseover", showTooltip )
+              .on("mouseleave", hideTooltip )
+          
+        // Append annotation line to highlight the separation
+
+          svg
+          .append("line")
+            .attr("x1", x("2020-05-25") )
+            .attr("x2", x("2020-07-14") )
+          //.attr("x1", midDate )
+          //.attr("x1", midDate )
+            .attr("y1", y(15000000) )
+            .attr("y2", y(15000000) )
+            .attr("stroke", "#F46D43")
+          // .attr("stroke-dasharray", "4")
+          svg
+          .append("text")
+          .attr("x", x("2020-04-12"))
+          .attr("y", y(15700000))
+          .text("Confirmed cases trending upwards with few exceptions")
+          .style("font-size", "16px")
+        .style("fill", "blue")
+        .style("font-family", "sans-serif")
+        
+        svg
+          .append("text")
+          .attr("x", x("2020-05-20"))
+          .attr("y", y(15200000))
+          .text("(Move mouse over bars for more details)")
+          .style("font-size", "14px")
+        
+        svg
+          .append("circle")
+        .attr("cx",x("2020-07-25"))
+        .attr("cy",y(15000000))
+        .attr("r", 50)
+          .attr("stroke", "#F46D43")
+          .attr("stroke-dasharray", "4")
+        .attr("fill", "none")
+        
+        })
+        
+      }
+    // Initialize plot
+
+     update('World')
+      //d3.csv("https://covid.ourworldindata.org/data/ecdc/locations.csv", function(countryData) {
+    d3.csv("https://covid.ourworldindata.org/data/ecdc/locations.csv", function(countryData) {
+        // add the options to the button
+      countryData.push({countriesAndTerritories: "World",location: "World", continent: "World",population_year: "2020",population:"38928341"})
+      //console.log(countryData)
+        d3.select("#selectButton")
+          .selectAll('myOptions')
+          .data(countryData)
+          .enter()
+          .append('option')
+          .text(function (d) { return d.location; }) // text showed in the menu
+          .attr("value", function (d) { return d.location; }) // corresponding value returned by the button
+      })	
+
+    d3.select("#selectButton").on("change", function(d) {
+        // recover the option that has been chosen
+        var selectedOption = d3.select(this).property("value")
+        // run the updateChart function with this selected option
+        update(selectedOption)
+    })
+  }
+  
+
+function drawDeathCase(){  
+// set the dimensions and margins of the graph
+
+var margin = {top: 50, right: 100, bottom: 100, left: 150},
+          width = 1000,
+          height = 600;
+
+// append the svg object to the body of the page
+var svg = d3.select("#covid_total_deaths")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+
+// Initialize the X axis
+//var x = d3.scaleBand()
+//  .range([ 0, width ])
+//  .padding(0.2);
+var x = d3.scaleBand()
+  //.domain(["2019-12-31", "2020-07-21"])
+  .range([ 0, width ]);
+var xAxis = svg.append("g")
+  .attr("transform", "translate(0," + height + ")")
+// text label for the x axis
+  svg.append("text")  
+      .attr("transform",
+            "translate(" + (width/2) + " ," + 
+                           (height + margin.top + 30) + ")")
+      .style("text-anchor", "middle")
+	  .style("font", "20px times")
+      .text("Date");
+// Initialize the Y axis
+var y = d3.scaleLinear()
+  .range([ height, 0]);
+var yAxis = svg.append("g")
+  .attr("class", "myYaxis")
+// text label for the y axis
+  svg.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", margin.left - margin.left - margin.right)
+      .attr("x",0 - (height / 2))
+      .attr("dy", "1em")
+      .style("text-anchor", "middle")
+	  .style("font", "20px times")
+      .text("Total Deaths");      
+
+
+// A function that create / update the plot for a given variable:
+function update(selectedVar) {
+  
+  // Parse the Data
+  //d3.csv("https://covid.ourworldindata.org/data/ecdc/total_deaths.csv", function(rawData) {
+  d3.csv("https://covid.ourworldindata.org/data/ecdc/total_deaths.csv", function(rawData) {
+    // X axis
+	var cutoffDate = new Date(2020,0,15);
+	//console.log(rawData);
+		var data = rawData.filter(function(d) {return new Date(d.date) > cutoffDate;});
+		//var data = data1.filter(function(d) {return parseInt(d[selectedVar], 10) > 0;});
+	//console.log(data);
+	//console.log(cutoffDate);
+    x.domain(data.map(function(d) { return d.date; }))
+    xAxis.transition().duration(1000).call(d3.axisBottom(x).tickValues(x.domain().filter(function(d, i) { return !(i % 4); })))
+	.selectAll("text")
+		.attr("transform", "translate(-25,30)rotate(-60)")
+
+    // Add Y axis
+    y.domain([0, d3.max(data, function(d) { return +d[selectedVar] }) ]);
+    yAxis.transition().duration(1000).call(d3.axisLeft(y));
+    
+	          // Add a tooltip div. Here I define the general feature of the tooltip: stuff that do not depend on the data point.
+  // Its opacity is set to 0: we don't see it by default.
+  var tooltip = d3.select("#covid_total_deaths")
+   .append("div")
+	.style("position", "absolute")
+    .style("opacity", 0)
+    .attr("class", "tooltip")
+    .style("background-color", "black")
+    .style("color", "white")
+    .style("border-radius", "5px")
+    .style("padding", "10px")
+
+  // A function that change this tooltip when the user hover a point.
+  // Its opacity is set to 1: we can now see it. Plus it set the text and position of tooltip depending on the datapoint (d)
+  const formater =  d3.format(',d');
+  var showTooltip = function(d) {
+    var x = d3.event.x, y = d3.event.y;
+    tooltip
+      .transition()
+      .duration(200)
+      .style("opacity", 1)
+    tooltip
+      .html("Total Deaths:  " + formater(parseInt(d[selectedVar], 10)) + 
+	  "<br />" + "Date:  " + d.date +
+	  "<br />" + "Country/Region:  " + selectedVar)
+	  .style("left", (d3.event.pageX) + "px")
+      .style("top", (d3.event.pageY) + "px")
+	  }
+	  
+  var moveTooltip = function(d) {
+    tooltip
+    .style("left", (d3.mouse(this)[0]+10) + "px")
+    .style("top", (d3.mouse(this)[1]) + "px")
+  }
+  // A function that change this tooltip when the leaves a point: just need to set opacity to 0 again
+  var hideTooltip = function(d) {
+    tooltip
+      .transition()
+      .duration(100)
+      .style("opacity", 0)
+  }
+    hideTooltip;
+ 	var u = svg.selectAll("rect")
+      .data(data)
+    // update bars
+    u
+      .enter()
+      .append("rect")
+      .merge(u)
+      //.transition()
+      //.duration(1000)
+        .attr("x", function(d) { return x(d.date); })
+        .attr("y", function(d) { return y(d[selectedVar]); })
+        .attr("width", x.bandwidth())
+        .attr("height", function(d) { return height - y(d[selectedVar]); })
+        .attr("fill", "#69b3a2")
+		.on("mouseover", showTooltip )
+        .on("mouseleave", hideTooltip )
+		
+		// Append annotation line to highlight the separation
+
+    svg
+    .append("line")
+      .attr("x1", x("2020-05-25") )
+      .attr("x2", x("2020-07-14") )
+	  //.attr("x1", midDate )
+	  //.attr("x1", midDate )
+      .attr("y1", y(600000) )
+      .attr("y2", y(600000) )
+      .attr("stroke", "#F46D43")
+     // .attr("stroke-dasharray", "4")
+    svg
+    .append("text")
+    .attr("x", x("2020-05-21"))
+    .attr("y", y(630000))
+    .text("Upward turn in Covid-19 fatalities")
+    .style("font-size", "16px")
+	.style("fill", "blue")
+	.style("font-family", "sans-serif")
+	
+	svg
+    .append("text")
+    .attr("x", x("2020-05-25"))
+    .attr("y", y(610000))
+    .text("(Move mouse over bars for more details)")
+    .style("font-size", "12px")
+	
+	svg
+    .append("circle")
+	.attr("cx",x("2020-07-25"))
+	.attr("cy",y(600000))
+	.attr("r", 50)
+    .attr("stroke", "#F46D43")
+    .attr("stroke-dasharray", "4")
+	.attr("fill", "none")	
+  })
+  
+}
+
+// Initialize plot
+
+update('World')
+ 
+ //d3.csv("https://covid.ourworldindata.org/data/ecdc/locations.csv", function(countryData1) {
+ d3.csv("https://covid.ourworldindata.org/data/ecdc/locations.csv", function(countryData1) {
+    // add the options to the button
+	countryData1.push({countriesAndTerritories: "World",location: "World", continent: "World",population_year: "2020",population:"7,800,000,000"})
+	var countryData = countryData1.filter(function(d){ return  (
+	d.location != "Bhutan" &&
+	d.location != "Anguilla" &&
+	d.location != "Bonaire Sint Eustatius and Saba" &&
+	d.location != "Cambodia" &&
+	d.location != "Dominica" &&
+	d.location != "Eritrea" &&
+	d.location != "Faeroe Islands" &&
+	d.location != "Falkland Islands" &&
+	d.location != "Fiji" &&
+	d.location != "French Polynesia" &&
+	d.location != "Gibraltar" &&
+	d.location != "Greenland" &&
+	d.location != "Grenada" &&
+	d.location != "Laos" &&
+	d.location != "Mongolia" &&
+	d.location != "New Caledonia" &&
+	d.location != "Papua New Guinea" &&
+	d.location != "Saint Kitts and Nevis" &&
+	d.location != "Saint Lucia" &&
+	d.location != "Saint Kitts and Nevis" &&
+	d.location != "Seychelles" && 
+	d.location != "Timor" &&
+	d.location != "Uganda" &&
+	d.location != "Vatican" &&
+	d.location != "Vietnam"
+	) })
+	
+	//console.log(countryData)
+    d3.select("#selectButton")
+      .selectAll('myOptions')
+     	.data(countryData)
+      .enter()
+    	.append('option')
+      .text(function (d) { return d.location; }) // text showed in the menu
+      .attr("value", function (d) { return d.location; }) // corresponding value returned by the button
+	})	
+
+    d3.select("#selectButton").on("change", function(d) {
+        // recover the option that has been chosen
+        var selectedOption = d3.select(this).property("value")
+        // run the updateChart function with this selected option
+        update(selectedOption)
+    })
+}
+
+onPageLoad();
+</script>
+</body>
+</html>
