@@ -118,7 +118,7 @@
 <div class="wrapper">
   <h1 align=center> COVID-19 Narrative Visualization</h1>
   <p class="g-body" >The coronavirus pandemic has sickened more than <span style="color: green; ">17,586,600</span> people, according
-     to official counts. As of August 2nd, 2020 morning, at least <span style="color: red">680,200</span> people have died,
+     to official counts. As of Today morning, at least <span style="color: red">680,200</span> people have died,
     and the virus has been detected in nearly every country, as these map shows. I attempted to create a narrative visualization that will allow user to explore the details of coronavirus pandemic spread and impact with daily new coronavirus cases, cumulative/total cases, and deaths by country.</p>
   <div class="layer-toggles">
     <button class="toggle-button" data-key="covid_hot_spots" onclick="toggleElement(event)">
@@ -142,7 +142,7 @@
       <select class="dropbtn" id="selectButton"><option class="dropdown-content" value="World" selected>World </option></select>
     </div>
       <div id="covid_hot_spots" class="chart-holder">
-          <p>Average Total Infection Fatality Rate(IFR) across the globe as of August 2, 2020 <br><br>
+          <p>Average Total Infection Fatality Rate(IFR) across the globe as of Today <br><br>
             In this choropleth maps, the IFR is shown based on the thinkness of color per region from yellowish to red. You can mouseover to find more information on interested region. 
           </p>
           
@@ -245,9 +245,9 @@ function drawHotSpots(){
     // .defer(d3.csv, "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world_population.csv", function(d) { 
     .defer(d3.csv, "https://covid.ourworldindata.org/data/owid-covid-data.csv", function(d) { 
       // console.log(d)
-      console.log(d3.max(d, function(d) { return +d.date; }))
-
-      if(d.date=="2020-10-18") {
+      let [mon, da, ye]    = ( new Date() ).toLocaleDateString().split("/")
+      let tody = ye+'-'+mon+'-'+da;
+      if(d.date==tody) {
         data.set(d.iso_code, d.total_deaths);
         total_casas_data.set(d.iso_code, d.total_cases) }}
         )
