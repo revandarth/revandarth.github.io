@@ -244,14 +244,9 @@ function drawHotSpots(){
     .defer(d3.json, "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson")
     // .defer(d3.csv, "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world_population.csv", function(d) { 
     .defer(d3.csv, "https://covid.ourworldindata.org/data/owid-covid-data.csv", function(d) { 
-      console.log("finding today's date")
       let [mon, da, ye]    = ( new Date() ).toLocaleDateString().split("/")
-      
-      console.log(mon)
-      console.log(mon)
-      console.log(mon)
-      let tody = ye+'-'+mon+'-'+da;
-      console.log(tody)
+      var dayy = Number(da)-1;
+      let tody = ye+'-'+mon+'-'+dayy.toString();      
       if(d.date==tody) {
         data.set(d.iso_code, d.total_deaths);
         total_casas_data.set(d.iso_code, d.total_cases) }}
